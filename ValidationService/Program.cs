@@ -25,7 +25,7 @@ var compiledPatterns = allowedPatterns
     .Select(p => new Regex(p, RegexOptions.IgnoreCase | RegexOptions.Compiled))
     .ToArray();
 
-app.MapPost("/api/validate", (AttributeCollectionSubmitRequest request) =>
+app.MapPost("/api/validate", (AttributeCollectionStartRequest request) =>
 {
     var identities = request.Data?.UserSignUpInfo?.Identities;
     var email = identities is { Length: > 0 } ? identities[0]?.IssuerAssignedId : null;
@@ -41,20 +41,19 @@ app.MapPost("/api/validate", (AttributeCollectionSubmitRequest request) =>
     var action = allowed
         ? new ResponseAction
         {
-            ODataType = "microsoft.graph.attributeCollectionSubmit.continueWithDefaultBehavior"
+            ODataType = "microsoft.graph.attributeCollectionStart.continueWithDefaultBehavior"
         }
         : new ResponseAction
         {
-            ODataType = "microsoft.graph.attributeCollectionSubmit.showBlockPage",
-            Title = "Access Denied",
+            ODataType = "microsoft.graph.attributeCollectionStart.showBlockPage",
             Message = "Your email address is not authorized to register. Please contact support."
         };
 
-    return Results.Ok(new AttributeCollectionSubmitResponse
+    return Results.Ok(new AttributeCollectionStartResponse
     {
         Data = new ResponseData
         {
-            ODataType = "microsoft.graph.onAttributeCollectionSubmitResponseData",
+            ODataType = "microsoft.graph.onAttributeCollectionStartResponseData",
             Actions = new[] { action }
         }
     });
@@ -62,9 +61,9 @@ app.MapPost("/api/validate", (AttributeCollectionSubmitRequest request) =>
 
 app.Run();
 
-// ----- Request model (Entra CIAM OnAttributeCollectionSubmit) -----
+// ----- Request model (Entra CIAM OnAttributeCollectionStart) -----
 
-record AttributeCollectionSubmitRequest(RequestData? Data);
+record AttributeCollectionStartRequest(RequestData? Data);
 
 record RequestData(UserSignUpInfo? UserSignUpInfo);
 
@@ -72,9 +71,9 @@ record UserSignUpInfo(Identity[]? Identities);
 
 record Identity(string? IssuerAssignedId);
 
-// ----- Response model (Entra CIAM OnAttributeCollectionSubmit) -----
+// ----- Response model (Entra CIAM OnAttributeCollectionStart) -----
 
-class AttributeCollectionSubmitResponse
+class AttributeCollectionStartResponse
 {
     [System.Text.Json.Serialization.JsonPropertyName("data")]
     public ResponseData Data { get; set; } = default!;
